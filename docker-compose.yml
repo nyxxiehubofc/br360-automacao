@@ -1,0 +1,101 @@
+services:
+  n8n:
+    image: n8nio/n8n
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_BASIC_AUTH_ACTIVE=true
+      - N8N_BASIC_AUTH_USER=br360
+      - N8N_BASIC_AUTH_PASSWORD=br360admin
+      - GENERIC_TIMEZONE=America/Sao_Paulo
+      - NOTION_TOKEN=${NOTION_TOKEN}
+    volumes:
+      - n8n_data:/home/node/.n8n
+    restart: always
+
+  evolution:
+    image: evoapicloud/evolution-api:latest
+    depends_on:
+      - evolution-postgres
+      - evolution-redis
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    volumes:
+      - evolution_instances:/evolution/instances
+    restart: always
+
+  evolution-manager:
+    image: evoapicloud/evolution-manager:latest
+    depends_on:
+      - evolution
+    ports:
+      - "3000:80"
+    restart: always
+
+  notion-approval-monitor:
+    image: node:20-alpine
+    depends_on:
+      - evolution
+    working_dir: /app
+    command: node monitorar_notion_aprovacao_30s.mjs
+    env_file:
+      - .env
+    environment:
+      - EVOLUTION_URL=http://evolution:8080/message/sendText/br360
+      - EVOLUTION_KEY=${EVOLUTION_KEY}
+      - WHATSAPP_GROUP=${WHATSAPP_GROUP}
+      - STATE_FILE=/app/notion_aprovacao_state.json
+      - LOG_FILE=/app/notion_aprovacao_monitor.log
+      - PID_FILE=/app/notion_aprovacao_monitor.pid
+    volumes:
+      - .:/app
+    restart: always
+
+  daily-report-08h:
+    image: node:20-alpine
+    depends_on:
+      - evolution
+    working_dir: /app
+    command: node relatorio_diario_08h.mjs
+    env_file:
+      - .env
+    environment:
+      - EVOLUTION_URL=http://evolution:8080/message/sendText/br360
+      - EVOLUTION_KEY=${EVOLUTION_KEY}
+      - WHATSAPP_GROUP=${WHATSAPP_GROUP}
+      - STATE_FILE=/app/relatorio_08h_state.json
+      - LOG_FILE=/app/relatorio_08h.log
+    volumes:
+      - .:/app
+    restart: always
+
+  evolution-redis:
+    image: redis:latest
+    command: redis-server --port 6379 --appendonly yes
+    volumes:
+      - evolution_redis:/data
+    restart: always
+
+  evolution-postgres:
+    image: postgres:15
+    command:
+      - postgres
+      - -c
+      - max_connections=1000
+      - -c
+      - listen_addresses=*
+    environment:
+      - POSTGRES_DB=${POSTGRES_DATABASE}
+      - POSTGRES_USER=${POSTGRES_USERNAME}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: always
+
+volumes:
+  n8n_data:
+  evolution_instances:
+  evolution_redis:
+  postgres_data:

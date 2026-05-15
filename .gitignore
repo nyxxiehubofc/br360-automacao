@@ -1,0 +1,26 @@
+.env
+
+# Runtime state
+*.log
+*.pid
+*.out
+*_state.json
+relatorio_08h_state.json
+br360_drive_folders.json
+qrcode-*.png
+
+# Local/editor files
+.DS_Store
+node_modules/
+
+# Legacy generated n8n exports and local setup artifacts
+br360-*.json
+export_*.json
+gerar_fluxo_*.mjs
+gerar_fluxos_br360.mjs
+testar_3_relatorios.mjs
+instalar_br360.command
+reparar_docker_e_subir_br360.command
+continuar_br360.command
+grupos-whatsapp.txt
+Docker.dmg

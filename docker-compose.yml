@@ -112,6 +112,30 @@ services:
       - .:/app
     restart: always
 
+  beto-prince-delivery-report:
+    image: node:20-alpine
+    depends_on:
+      - evolution
+    working_dir: /app
+    command: node relatorio_beto_prince_entregas.mjs
+    env_file:
+      - .env
+    environment:
+      - EVOLUTION_URL=http://evolution:8080/message/sendText/br360
+      - EVOLUTION_KEY=${EVOLUTION_KEY}
+      - BETO_PRINCE_GROUP=${BETO_PRINCE_GROUP}
+      - BETO_PRINCE_GROUP_NAME=Br360 - Beto & Prince notificações
+      - STATE_FILE=/app/beto_prince_entregas_state.json
+      - LOG_FILE=/app/beto_prince_entregas.log
+      - BETO_PRINCE_DAILY_REPORT_HOUR=19
+      - BETO_PRINCE_DAILY_REPORT_MINUTE=0
+      - BETO_PRINCE_WEEKLY_REPORT_WEEKDAY=0
+      - BETO_PRINCE_WEEKLY_REPORT_HOUR=19
+      - BETO_PRINCE_WEEKLY_REPORT_MINUTE=10
+    volumes:
+      - .:/app
+    restart: always
+
   evolution-redis:
     image: redis:latest
     command: redis-server --port 6379 --appendonly yes

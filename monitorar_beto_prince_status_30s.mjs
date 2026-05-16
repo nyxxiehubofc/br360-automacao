@@ -183,7 +183,7 @@ async function resolveWhatsAppGroup() {
 function messageFor(item) {
   const statusInfo = WATCHED_STATUS.get(item.status);
   const lines = [
-    `${statusInfo.emoji} *Beto & Prince: ${statusInfo.label}*`,
+    `${statusInfo.emoji} *${statusInfo.label}*`,
     '',
     `Item: *${item.nome}*`,
     `Responsável: *${item.responsavel}*`,

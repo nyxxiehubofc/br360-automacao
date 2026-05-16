@@ -92,6 +92,26 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     restart: always
 
+  beto-prince-status-monitor:
+    image: node:20-alpine
+    depends_on:
+      - evolution
+    working_dir: /app
+    command: node monitorar_beto_prince_status_30s.mjs
+    env_file:
+      - .env
+    environment:
+      - EVOLUTION_URL=http://evolution:8080/message/sendText/br360
+      - EVOLUTION_KEY=${EVOLUTION_KEY}
+      - BETO_PRINCE_GROUP=${BETO_PRINCE_GROUP}
+      - BETO_PRINCE_GROUP_NAME=Br360 - Beto & Prince notificações
+      - STATE_FILE=/app/beto_prince_status_state.json
+      - LOG_FILE=/app/beto_prince_status_monitor.log
+      - PID_FILE=/app/beto_prince_status_monitor.pid
+    volumes:
+      - .:/app
+    restart: always
+
   evolution-redis:
     image: redis:latest
     command: redis-server --port 6379 --appendonly yes

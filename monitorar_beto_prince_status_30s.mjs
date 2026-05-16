@@ -14,7 +14,6 @@ let whatsappGroup = process.env.BETO_PRINCE_GROUP || process.env.WHATSAPP_GROUP_
 const REQUEST_TIMEOUT_MS = 20_000;
 
 const DATABASE_ID = '34a48284-2b44-80b0-97d8-ce6d435d8687';
-const WATCHED_RESPONSAVEIS = new Set(['Beto', 'Prince']);
 const WATCHED_STATUS = new Map([
   ['Fila', { emoji: '📥', label: 'entrou na fila' }],
   ['Aprovado', { emoji: '✅', label: 'foi aprovado' }],
@@ -108,13 +107,6 @@ async function getItems() {
   } while (cursor);
 
   return results.map(normalize);
-}
-
-function watchedResponsavel(item) {
-  return item.responsavel
-    .split(',')
-    .map((name) => name.trim())
-    .some((name) => WATCHED_RESPONSAVEIS.has(name));
 }
 
 function watchedStatus(item) {
@@ -220,11 +212,11 @@ async function scan() {
 
     for (const item of items) {
       const previous = state.items[item.id];
+      const isNewItem = !previous;
+      const changedToWatchedStatus = previous && previous.status !== item.status;
       const shouldNotify =
         state.initialized &&
-        previous &&
-        previous.status !== item.status &&
-        watchedResponsavel(item) &&
+        (isNewItem || changedToWatchedStatus) &&
         watchedStatus(item);
 
       state.items[item.id] = {

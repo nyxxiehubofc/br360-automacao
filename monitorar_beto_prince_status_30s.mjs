@@ -55,6 +55,7 @@ function textValue(value) {
   if (value.title) return value.title.map((part) => part.plain_text).join('');
   if (value.rich_text) return value.rich_text.map((part) => part.plain_text).join('');
   if (value.select) return value.select.name ?? '';
+  if (value.multi_select) return value.multi_select.map((option) => option.name).filter(Boolean).join(', ');
   if (value.status) return value.status.name ?? '';
   if (value.date) return value.date.start ?? '';
   if (value.people) return value.people.map((person) => person.name || person.person?.email).filter(Boolean).join(', ');
@@ -66,6 +67,7 @@ function normalize(page) {
     id: page.id,
     url: page.url,
     nome: textValue(prop(page, 'Nome')) || 'Sem nome',
+    midia: textValue(prop(page, 'Midia')) || textValue(prop(page, 'Mídia')),
     status: textValue(prop(page, 'Status')),
     responsavel: textValue(prop(page, 'Responsável')) || textValue(prop(page, 'Responsavel')) || 'Sem responsável',
     urgencia: textValue(prop(page, 'Urgência')) || textValue(prop(page, 'Urgencia')),
@@ -182,10 +184,11 @@ async function resolveWhatsAppGroup() {
 
 function messageFor(item) {
   const statusInfo = WATCHED_STATUS.get(item.status);
-  const lines = [
+    const lines = [
     `${statusInfo.emoji} *${statusInfo.label}*`,
     '',
     `Item: *${item.nome}*`,
+    `Mídia: ${item.midia || 'Não informado'}`,
     `Responsável: *${item.responsavel}*`,
     `Status: ${item.status}`,
   ];
